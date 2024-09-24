@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import BackButton from './BackButton';
+import './Center.css';
 
 function SalesImport() {
   const [data, setData] = useState([]);
@@ -144,10 +146,15 @@ function SalesImport() {
   };
 
   return (
+    <div>
     <div className="App">
       <h1>Excel to Tally XML Converter - Sales</h1>
       <input type="file" onChange={handleFileUpload} />
       <button onClick={generateTallyXML}>Generate Tally XML</button>
+    </div>
+    <div className='center'>
+    <BackButton />
+    </div>
     </div>
   );
 }

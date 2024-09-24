@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import BackButton from './BackButton';
+import './Center.css';
+
 
 function BankStatementImport() {
   const [data, setData] = useState([]);
@@ -22,21 +25,35 @@ function BankStatementImport() {
 
   const parseDate = (dateValue) => {
     if (typeof dateValue === 'string') {
-      const [day, month, year] = dateValue.split('-');
-      return `${year}${month}${day}`;
+        // Detect various date formats and parse them accordingly
+        const regexPatterns = [
+            { regex: /^(\d{2})-(\d{2})-(\d{4})$/, format: (day, month, year) => `${year}${month}${day}` }, // DD-MM-YYYY
+            { regex: /^(\d{2})\/(\d{2})\/(\d{4})$/, format: (day, month, year) => `${year}${month}${day}` }, // DD/MM/YYYY
+            { regex: /^(\d{4})-(\d{2})-(\d{2})$/, format: (year, month, day) => `${year}${month}${day}` },  // YYYY-MM-DD
+            // Add more patterns if needed
+        ];
+
+        for (let { regex, format } of regexPatterns) {
+            const match = dateValue.match(regex);
+            if (match) {
+                return format(match[1], match[2], match[3]);
+            }
+        }
+
+        throw new Error(`Unexpected date format: ${dateValue}`);
     } else if (dateValue instanceof Date) {
-      const year = dateValue.getFullYear();
-      const month = (`0${dateValue.getMonth() + 1}`).slice(-2);
-      const day = (`0${dateValue.getDate()}`).slice(-2);
-      return `${year}${month}${day}`;
+        const year = dateValue.getFullYear();
+        const month = (`0${dateValue.getMonth() + 1}`).slice(-2);
+        const day = (`0${dateValue.getDate()}`).slice(-2);
+        return `${year}${month}${day}`;
     } else if (typeof dateValue === 'number') {
-      const parsedDate = new Date((dateValue - 25569) * 86400 * 1000);
-      const year = parsedDate.getFullYear();
-      const month = (`0${parsedDate.getMonth() + 1}`).slice(-2);
-      const day = (`0${parsedDate.getDate()}`).slice(-2);
-      return `${year}${month}${day}`;
+        const parsedDate = new Date((dateValue - 25569) * 86400 * 1000);
+        const year = parsedDate.getFullYear();
+        const month = (`0${parsedDate.getMonth() + 1}`).slice(-2);
+        const day = (`0${parsedDate.getDate()}`).slice(-2);
+        return `${year}${month}${day}`;
     } else {
-      throw new Error(`Unexpected date format: ${dateValue}`);
+        throw new Error(`Unexpected date format: ${dateValue}`);
     }
   };
 
@@ -145,10 +162,16 @@ function BankStatementImport() {
   };
 
   return (
+    <div>
     <div className="App">
       <h1>Excel to Tally XML Converter - Bank Statement</h1>
       <input type="file" onChange={handleFileUpload} />
       <button onClick={generateTallyXML}>Generate Tally XML</button>
+    </div>
+    <div className='center'>
+    <BackButton />
+    </div>
+       
     </div>
   );
 }

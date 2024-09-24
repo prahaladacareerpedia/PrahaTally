@@ -1,52 +1,64 @@
 .wrapper {
 
     
-    gap: 100px;
-    margin-top: 20px;
-  }
-  .heading{
-    font-size: 24px;
-    font-weight: bold;
-    font-style:oblique;
-    color: rgb(8, 76, 88);
-    
-  }
-  .button2 {
-    padding: 15px 25px;
-    width: 600px;
-    height: 60px;
-    font-size: 16px;
-    margin: 30px;
-    color: #333;
-    background-color: #f2f2f2;
-    border: 2px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: background-color 0.3s, box-shadow 0.3s;
-  }
+  gap: 100px;
+  margin-top: 20px;
+}
+.heading{
+  font-size: 24px;
+  font-weight: bold;
+  font-style:oblique;
+  color: rgb(8, 76, 88);
   
-  button:hover {
-    background-color: #e0e0e0;
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  button:active {
-    background-color: #ccc;
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
-  }
-  
-  .preloader {
-    display: none;
-  }
-  
-  particle {
-    position: fixed;
-    top: 0;
-    left: 0;
-    opacity: 0;
-    pointer-events: none;
-    background-repeat: no-repeat;
-    background-size: contain;
-  }
-  
+}
+.button2 {
+  padding: 15px 25px;
+  width: 600px;
+  height: 60px;
+  font-size: 16px;
+  margin: 30px;
+  color: #333;
+  background-color: #f2f2f2;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+button:hover {
+  background-color: #e0e0e0;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+  background-color: #ccc;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.preloader {
+  display: none;
+}
+
+particle {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.logout-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.logout-button:hover {
+  background-color: #d32f2f;
+}

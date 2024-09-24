@@ -5,6 +5,10 @@ import './ParticleButtons.css';
 function ParticleButtons() {
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    navigate('/');
+  };
+
   return (
     <div>
       <h2>WELCOME TO ARJUN ASSOCIATES</h2>
@@ -19,6 +23,7 @@ function ParticleButtons() {
           PURCHASE IMPORT
         </button> {/* New button for Purchase Import */}
       </div>
+      <button className="logout-button" onClick={handleLogout}>LOGOUT</button>
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import BackButton from './BackButton';
+import './Center.css';
 
-function PurchaseImport() {  // Changed function name to match component
+function PurchaseImport() {
   const [data, setData] = useState([]);
 
   const handleFileUpload = (event) => {
@@ -49,7 +51,7 @@ function PurchaseImport() {  // Changed function name to match component
 
       const requestData = xmlDoc.createElement('REQUESTDATA');
 
-      const groupedData = groupBy(data, 'Invoice number'); 
+      const groupedData = groupBy(data, 'Invoice number');
 
       for (const [invoiceNumber, group] of Object.entries(groupedData)) {
         const tallyMessage = xmlDoc.createElement('TALLYMESSAGE');
@@ -59,7 +61,7 @@ function PurchaseImport() {  // Changed function name to match component
         voucher.setAttribute('OBJVIEW', 'Accounting Voucher View');
 
         const firstEntry = group[0];
-        const formattedDate = formatDate(firstEntry['Invoice Date']); 
+        const formattedDate = formatDate(firstEntry['Invoice Date']);
 
         createElementWithText(voucher, 'DATE', formattedDate);
         createElementWithText(voucher, 'REFERENCEDATE', formattedDate);
@@ -78,11 +80,13 @@ function PurchaseImport() {  // Changed function name to match component
         createElementWithText(voucher, 'SUPPLIERINVOICENO', invoiceNumber);
         createElementWithText(voucher, 'REFERENCE', invoiceNumber);
 
+        let totalDebit = 0;
+
         const partyLedgerEntry = xmlDoc.createElement('ALLLEDGERENTRIES.LIST');
         createElementWithText(partyLedgerEntry, 'LEDGERNAME', firstEntry['Trade/Legal name']);
         createElementWithText(partyLedgerEntry, 'ISDEEMEDPOSITIVE', 'No');
         const partyAmount = Math.round(
-          group.reduce((sum, row) => sum + row['Taxable Value (₹)'] + row['Central Tax(₹)'] + row['State/UT Tax(₹)'], 0) * 100
+          group.reduce((sum, row) => sum + row['Taxable Value (₹)'] + row['Central Tax(₹)'] + row['State/UT Tax(₹)'] + (row['Integrated Tax(₹)'] || 0), 0) * 100
         ) / 100;
         createElementWithText(partyLedgerEntry, 'AMOUNT', partyAmount);
 
@@ -93,6 +97,7 @@ function PurchaseImport() {  // Changed function name to match component
         partyLedgerEntry.appendChild(billAlloc);
 
         voucher.appendChild(partyLedgerEntry);
+        totalDebit += partyAmount;
 
         group.forEach(row => {
           const ledgerEntry = xmlDoc.createElement('ALLLEDGERENTRIES.LIST');
@@ -100,20 +105,41 @@ function PurchaseImport() {  // Changed function name to match component
           const ledgerName = `${rate}`;  // Use exactly as in Excel
           createElementWithText(ledgerEntry, 'LEDGERNAME', ledgerName);
           createElementWithText(ledgerEntry, 'ISDEEMEDPOSITIVE', 'Yes');
-          createElementWithText(ledgerEntry, 'AMOUNT', -row['Taxable Value (₹)']);
+          const taxableAmount = -row['Taxable Value (₹)'];
+          createElementWithText(ledgerEntry, 'AMOUNT', taxableAmount);
           voucher.appendChild(ledgerEntry);
 
-          const centralTaxEntry = xmlDoc.createElement('ALLLEDGERENTRIES.LIST');
-          createElementWithText(centralTaxEntry, 'LEDGERNAME', 'Central Tax');
-          createElementWithText(centralTaxEntry, 'ISDEEMEDPOSITIVE', 'Yes');
-          createElementWithText(centralTaxEntry, 'AMOUNT', -row['Central Tax(₹)']);
-          voucher.appendChild(centralTaxEntry);
+          totalDebit += Math.abs(taxableAmount);
 
-          const stateTaxEntry = xmlDoc.createElement('ALLLEDGERENTRIES.LIST');
-          createElementWithText(stateTaxEntry, 'LEDGERNAME', 'State/UT Tax');
-          createElementWithText(stateTaxEntry, 'ISDEEMEDPOSITIVE', 'Yes');
-          createElementWithText(stateTaxEntry, 'AMOUNT', -row['State/UT Tax(₹)']);
-          voucher.appendChild(stateTaxEntry);
+          if (row['Central Tax(₹)']) {
+            const centralTaxEntry = xmlDoc.createElement('ALLLEDGERENTRIES.LIST');
+            createElementWithText(centralTaxEntry, 'LEDGERNAME', 'Central Tax');
+            createElementWithText(centralTaxEntry, 'ISDEEMEDPOSITIVE', 'Yes');
+            const centralTaxAmount = -row['Central Tax(₹)'];
+            createElementWithText(centralTaxEntry, 'AMOUNT', centralTaxAmount);
+            voucher.appendChild(centralTaxEntry);
+            totalDebit += Math.abs(centralTaxAmount);
+          }
+
+          if (row['State/UT Tax(₹)']) {
+            const stateTaxEntry = xmlDoc.createElement('ALLLEDGERENTRIES.LIST');
+            createElementWithText(stateTaxEntry, 'LEDGERNAME', 'State/UT Tax');
+            createElementWithText(stateTaxEntry, 'ISDEEMEDPOSITIVE', 'Yes');
+            const stateTaxAmount = -row['State/UT Tax(₹)'];
+            createElementWithText(stateTaxEntry, 'AMOUNT', stateTaxAmount);
+            voucher.appendChild(stateTaxEntry);
+            totalDebit += Math.abs(stateTaxAmount);
+          }
+
+          if (row['Integrated Tax(₹)']) {
+            const integratedTaxEntry = xmlDoc.createElement('ALLLEDGERENTRIES.LIST');
+            createElementWithText(integratedTaxEntry, 'LEDGERNAME', 'Integrated Tax');
+            createElementWithText(integratedTaxEntry, 'ISDEEMEDPOSITIVE', 'Yes');
+            const integratedTaxAmount = -row['Integrated Tax(₹)'];
+            createElementWithText(integratedTaxEntry, 'AMOUNT', integratedTaxAmount);
+            voucher.appendChild(integratedTaxEntry);
+            totalDebit += Math.abs(integratedTaxAmount);
+          }
         });
 
         tallyMessage.appendChild(voucher);
@@ -163,10 +189,15 @@ function PurchaseImport() {  // Changed function name to match component
   };
 
   return (
-    <div className="App">
-      <h1>Excel to Tally XML Converter - Purchase</h1>
-      <input type="file" onChange={handleFileUpload} />
-      <button onClick={generateTallyXML}>Generate Tally XML</button>
+    <div>
+      <div className="App">
+        <h1>Excel to Tally XML Converter - Purchase</h1>
+        <input type="file" onChange={handleFileUpload} />
+        <button onClick={generateTallyXML}>Generate Tally XML</button>
+      </div>
+      <div className="center">
+        <BackButton />
+      </div>
     </div>
   );
 }
